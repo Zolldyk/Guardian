@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from typing import List
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from uagents import Model
 
 logger = logging.getLogger(__name__)
 
@@ -85,3 +86,87 @@ class Portfolio(BaseModel):
                 f"total_value_usd ({self.total_value_usd}) does not match sum of token values ({calculated_total})"
             )
         return self
+
+
+class CrashPerformance(BaseModel):
+    """Historical crash performance for a given correlation bracket."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "crash_name": "2022 Bear Market",
+                "crash_period": "Nov 2021 - Jun 2022",
+                "eth_drawdown_pct": -75.3,
+                "portfolio_loss_pct": -68.2,
+                "market_avg_loss_pct": -62.5,
+            }
+        }
+    )
+
+    crash_name: str = Field(..., description="Crash scenario name (e.g., '2022 Bear Market')")
+    crash_period: str = Field(..., description="Date range of crash (e.g., 'Nov 2021 - Jun 2022')")
+    eth_drawdown_pct: float = Field(..., description="ETH drawdown percentage during crash")
+    portfolio_loss_pct: float = Field(..., description="Avg portfolio loss for this correlation bracket")
+    market_avg_loss_pct: float = Field(..., description="Market average loss for comparison")
+
+
+class CorrelationAnalysis(BaseModel):
+    """Correlation analysis results from CorrelationAgent."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "correlation_coefficient": 0.95,
+                "correlation_percentage": 95,
+                "interpretation": "High",
+                "historical_context": [],
+                "calculation_period_days": 90,
+                "narrative": "Your portfolio is 95% correlated to ETH over the past 90 days.",
+            }
+        }
+    )
+
+    correlation_coefficient: float = Field(..., ge=-1.0, le=1.0, description="Pearson correlation (-1 to +1)")
+    correlation_percentage: int = Field(..., ge=0, le=100, description="Correlation as percentage (absolute value)")
+    interpretation: str = Field(..., description="High (>85%), Moderate (70-85%), Low (<70%)")
+    historical_context: List[CrashPerformance] = Field(default_factory=list, description="Historical crash data")
+    calculation_period_days: int = Field(default=90, description="Historical window in days")
+    narrative: str = Field(..., description="Plain English explanation of correlation risk")
+
+
+# uAgents Message Models for inter-agent communication
+# These models inherit from uagents.Model and define message-passing contracts
+# Note: These use dict types for Pydantic v2 models to maintain compatibility with uAgents (Pydantic v1)
+
+class AnalysisRequest(Model):
+    """
+    Request message sent from Guardian to CorrelationAgent requesting portfolio analysis.
+    Portfolio is sent as dict and converted to Portfolio model in handler.
+    """
+    request_id: str
+    wallet_address: str
+    portfolio_data: dict  # Portfolio serialized as dict
+    requested_by: str
+
+
+class CorrelationAnalysisResponse(Model):
+    """
+    Response message from CorrelationAgent containing correlation analysis results.
+    Analysis is sent as dict and converted from CorrelationAnalysis model.
+    """
+    request_id: str
+    wallet_address: str
+    analysis_data: dict  # CorrelationAnalysis serialized as dict
+    agent_address: str
+    processing_time_ms: int
+
+
+class ErrorMessage(Model):
+    """
+    Universal error message for communicating failures between agents.
+    """
+    request_id: str
+    error_type: str  # "timeout" | "invalid_data" | "insufficient_data" | "agent_unavailable"
+    error_message: str
+    agent_address: str
+    retry_recommended: bool

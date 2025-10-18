@@ -40,3 +40,10 @@ GUARDIAN_AGENT_ADDRESS = get_env_var("GUARDIAN_AGENT_ADDRESS")
 
 # Logging Configuration
 LOG_LEVEL = get_env_var("LOG_LEVEL", "INFO")
+
+# Correlation Analysis Configuration
+# Convert percentages (0-100) to decimals (0.0-1.0) for internal calculations
+HIGH_CORRELATION_THRESHOLD = float(get_env_var("HIGH_CORRELATION_THRESHOLD", "85")) / 100
+MODERATE_CORRELATION_THRESHOLD = float(get_env_var("MODERATE_CORRELATION_THRESHOLD", "70")) / 100
+MIN_REQUIRED_DATA_DAYS = int(get_env_var("MIN_REQUIRED_DATA_DAYS", "60"))
+MAX_EXCLUDED_VALUE_RATIO = float(get_env_var("MAX_EXCLUDED_VALUE_RATIO", "50")) / 100

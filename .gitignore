@@ -39,6 +39,11 @@ node_modules/
 # Build outputs
 *.log
 
+# Deployment documentation (local only)
+AGENTVERSE_DEPLOYMENT_SUMMARY.md
+DEPLOYMENT_GUIDE.md
+test_deployed_agent.py
+
 # OS files
 .DS_Store
 Thumbs.db
