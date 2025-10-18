@@ -17,5 +17,8 @@ mypy==1.18.2
 # Configuration
 python-dotenv==1.1.1
 
+# HTTP Requests
+requests==2.32.3
+
 # Knowledge Graph (for future MeTTa integration)
 # hyperon==0.2.8  # TODO: Add when Python 3.13 support available or use Python 3.12

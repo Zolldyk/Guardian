@@ -2,9 +2,10 @@
 
 import logging
 from uagents import Agent, Context, Model
+from shared.config import HELLO_WORLD_AGENT_SEED, LOG_LEVEL
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +23,7 @@ class HelloResponse(Model):
 # Create agent instance
 agent = Agent(
     name="hello_world_agent",
-    seed="hello_world_seed_phrase_12345",  # For deterministic address generation
+    seed=HELLO_WORLD_AGENT_SEED,  # Loaded from environment via config.py
     port=8000,
     endpoint=["http://localhost:8000/submit"],
 )

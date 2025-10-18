@@ -5,8 +5,8 @@
 .claude/
 claude.md
 
-# Documentation (local only)
-docs/
+# AI development files (local only)
+.ai/
 
 # Python
 venv/

@@ -1,7 +1,7 @@
 """Unit tests for Hello World Agent."""
 
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import Mock, AsyncMock
 import sys
 import os
 

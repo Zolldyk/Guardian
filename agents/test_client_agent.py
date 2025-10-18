@@ -2,9 +2,10 @@
 
 import logging
 from uagents import Agent, Context, Model
+from shared.config import TEST_CLIENT_AGENT_SEED, HELLO_WORLD_AGENT_ADDRESS, LOG_LEVEL
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
 logger = logging.getLogger(__name__)
 
 
@@ -22,13 +23,10 @@ class HelloResponse(Model):
 # Create test client agent
 agent = Agent(
     name="test_client_agent",
-    seed="test_client_seed_phrase_67890",
+    seed=TEST_CLIENT_AGENT_SEED,  # Loaded from environment via config.py
     port=8001,
     endpoint=["http://localhost:8001/submit"],
 )
-
-# Hello World Agent address (from hello_world_agent.py)
-HELLO_WORLD_AGENT_ADDRESS = "agent1qdv6858m9mfa3tlf2erjcz7tt7v224hrmyendyaw0r6369k3xj8lkjnrzym"
 
 logger.info(f"Test Client Agent address: {agent.address}")
 
@@ -55,16 +53,17 @@ async def startup(ctx: Context):
     logger.info(f"Agent name: {agent.name}")
     logger.info(f"Agent address: {agent.address}")
 
-    # Note: To enable inter-agent communication, update HELLO_WORLD_AGENT_ADDRESS
-    # with the actual address from hello_world_agent.py output
+    # Note: To enable inter-agent communication:
+    # 1. Verify HELLO_WORLD_AGENT_ADDRESS in .env or config.py matches running agent
+    # 2. Uncomment the send_test_message interval handler below
     logger.info("To test inter-agent communication:")
-    logger.info("1. Run hello_world_agent.py and copy its address")
-    logger.info("2. Update HELLO_WORLD_AGENT_ADDRESS in this file")
-    logger.info("3. Uncomment the send_test_message interval handler")
+    logger.info("1. Run hello_world_agent.py and verify its address")
+    logger.info(f"2. Confirm HELLO_WORLD_AGENT_ADDRESS={HELLO_WORLD_AGENT_ADDRESS}")
+    logger.info("3. Uncomment the send_test_message interval handler in this file")
 
 
 # Interval handler to send test messages (commented out by default)
-# Uncomment after setting HELLO_WORLD_AGENT_ADDRESS
+# Uncomment after verifying HELLO_WORLD_AGENT_ADDRESS matches running hello_world_agent
 # @agent.on_interval(period=30.0)
 # async def send_test_message(ctx: Context):
 #     """Send test message to hello world agent every 30 seconds."""
