@@ -1,0 +1,110 @@
+name: Guardian CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Lint with ruff
+      run: |
+        pip install ruff
+        ruff check .
+      continue-on-error: true  # Don't fail build on linting issues for MVP
+
+    - name: Type check with mypy
+      run: |
+        pip install mypy
+        mypy agents/ --ignore-missing-imports
+      continue-on-error: true  # Don't fail build on type issues for MVP
+
+    - name: Run unit tests
+      run: |
+        pytest tests/ -v --tb=short --cov=agents --cov-report=term-missing
+      env:
+        TEST_MODE: true
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      if: matrix.python-version == '3.10'
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+      continue-on-error: true
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run integration tests
+      run: |
+        pytest tests/test_integration.py -v --tb=short
+      env:
+        TEST_MODE: true
+        AGENT_RESPONSE_TIMEOUT: 5
+      continue-on-error: true  # Integration tests may fail without live Agentverse
+
+  build-check:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Verify project structure
+      run: |
+        test -d agents || (echo "agents/ directory missing" && exit 1)
+        test -d data || (echo "data/ directory missing" && exit 1)
+        test -d tests || (echo "tests/ directory missing" && exit 1)
+        test -f requirements.txt || (echo "requirements.txt missing" && exit 1)
+        test -f .env.example || (echo ".env.example missing" && exit 1)
+        echo "Project structure validated successfully"
+
+    - name: Check dependencies can be installed
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt --dry-run
