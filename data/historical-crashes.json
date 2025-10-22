@@ -1,0 +1,124 @@
+{
+  "crashes": [
+    {
+      "scenario_id": "crash_2022_bear",
+      "name": "2022 Bear Market",
+      "period": "Nov 2021 - Jun 2022",
+      "eth_drawdown_pct": -75.0,
+      "correlation_brackets": {
+        ">90%": -73.0,
+        "80-90%": -68.0,
+        "70-80%": -62.0,
+        "<70%": -48.0
+      },
+      "market_avg_loss_pct": -55.0,
+      "recovery_winners": ["SOL", "MATIC", "OP"],
+      "sector_performance": {
+        "DeFi Governance": -75.0,
+        "Layer-2": -60.0,
+        "Yield Protocols": -80.0,
+        "DEX": -68.0,
+        "Stablecoins": -5.0,
+        "Layer-1 Alts": -65.0
+      },
+      "recovery_period": "Jun 2022 - Dec 2023",
+      "opportunity_cost_sectors": {
+        "Layer-2": {
+          "best_performer": "OP",
+          "recovery_gain_pct": 420.0,
+          "reason": "Optimism airdrop and L2 narrative dominance"
+        },
+        "Layer-1 Alts": {
+          "best_performer": "SOL",
+          "recovery_gain_pct": 500.0,
+          "reason": "FTX recovery and ecosystem growth"
+        },
+        "Stablecoins": {
+          "best_performer": "USDC",
+          "recovery_gain_pct": 2.0,
+          "reason": "Capital preservation during crash, avoided 75% drawdown"
+        }
+      }
+    },
+    {
+      "scenario_id": "crash_2021_correction",
+      "name": "2021 Correction",
+      "period": "May 2021 - Jul 2021",
+      "eth_drawdown_pct": -55.0,
+      "correlation_brackets": {
+        ">90%": -52.0,
+        "80-90%": -48.0,
+        "70-80%": -43.0,
+        "<70%": -35.0
+      },
+      "market_avg_loss_pct": -45.0,
+      "recovery_winners": ["BNB", "ADA", "DOT"],
+      "sector_performance": {
+        "DeFi Governance": -58.0,
+        "Layer-2": -52.0,
+        "Yield Protocols": -62.0,
+        "DEX": -55.0,
+        "Stablecoins": -3.0,
+        "Layer-1 Alts": -50.0
+      },
+      "recovery_period": "Jul 2021 - Nov 2021",
+      "opportunity_cost_sectors": {
+        "Layer-1 Alts": {
+          "best_performer": "DOT",
+          "recovery_gain_pct": 180.0,
+          "reason": "Parachain auctions and ecosystem expansion"
+        },
+        "Layer-2": {
+          "best_performer": "MATIC",
+          "recovery_gain_pct": 220.0,
+          "reason": "Polygon scaling adoption and NFT boom"
+        },
+        "Stablecoins": {
+          "best_performer": "USDC",
+          "recovery_gain_pct": 1.5,
+          "reason": "Avoided 55% correction, maintained purchasing power"
+        }
+      }
+    },
+    {
+      "scenario_id": "crash_2020_covid",
+      "name": "2020 COVID Crash",
+      "period": "Feb 2020 - Mar 2020",
+      "eth_drawdown_pct": -65.0,
+      "correlation_brackets": {
+        ">90%": -62.0,
+        "80-90%": -58.0,
+        "70-80%": -53.0,
+        "<70%": -42.0
+      },
+      "market_avg_loss_pct": -50.0,
+      "recovery_winners": ["LINK", "UNI", "AAVE"],
+      "sector_performance": {
+        "DeFi Governance": -48.0,
+        "Layer-2": -55.0,
+        "Yield Protocols": -52.0,
+        "DEX": -50.0,
+        "Stablecoins": -2.0,
+        "Layer-1 Alts": -58.0
+      },
+      "recovery_period": "Mar 2020 - Dec 2020",
+      "opportunity_cost_sectors": {
+        "DeFi Governance": {
+          "best_performer": "UNI",
+          "recovery_gain_pct": 650.0,
+          "reason": "DeFi summer explosion and Uniswap V2 dominance"
+        },
+        "Layer-1 Alts": {
+          "best_performer": "LINK",
+          "recovery_gain_pct": 550.0,
+          "reason": "Oracle demand surge during DeFi summer"
+        },
+        "Stablecoins": {
+          "best_performer": "USDC",
+          "recovery_gain_pct": 1.0,
+          "reason": "Preserved capital through 65% market crash"
+        }
+      }
+    }
+  ]
+}

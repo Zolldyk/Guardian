@@ -1,0 +1,152 @@
+{
+  "1INCH": {
+    "token_symbol": "1INCH",
+    "sector": "DEX",
+    "sector_tags": ["DEX", "Aggregator"]
+  },
+  "AAVE": {
+    "token_symbol": "AAVE",
+    "sector": "DeFi Governance",
+    "sector_tags": ["Lending", "Governance"]
+  },
+  "ARB": {
+    "token_symbol": "ARB",
+    "sector": "Layer-2",
+    "sector_tags": ["Scaling", "Rollup"]
+  },
+  "ATOM": {
+    "token_symbol": "ATOM",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Blockchain", "Interoperability"]
+  },
+  "AVAX": {
+    "token_symbol": "AVAX",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Blockchain", "Smart Contracts"]
+  },
+  "BAL": {
+    "token_symbol": "BAL",
+    "sector": "DEX",
+    "sector_tags": ["DEX", "AMM", "Liquidity"]
+  },
+  "BTC": {
+    "token_symbol": "BTC",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Bitcoin", "Store of Value"]
+  },
+  "COMP": {
+    "token_symbol": "COMP",
+    "sector": "DeFi Governance",
+    "sector_tags": ["Lending", "Governance"]
+  },
+  "CRV": {
+    "token_symbol": "CRV",
+    "sector": "Yield Protocols",
+    "sector_tags": ["DEX", "Stablecoin", "Yield"]
+  },
+  "CVX": {
+    "token_symbol": "CVX",
+    "sector": "Yield Protocols",
+    "sector_tags": ["Yield", "Curve Booster"]
+  },
+  "DAI": {
+    "token_symbol": "DAI",
+    "sector": "Stablecoins",
+    "sector_tags": ["Stablecoin", "Decentralized"]
+  },
+  "DOT": {
+    "token_symbol": "DOT",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Blockchain", "Interoperability"]
+  },
+  "ETH": {
+    "token_symbol": "ETH",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Ethereum", "Smart Contracts"]
+  },
+  "FXS": {
+    "token_symbol": "FXS",
+    "sector": "Yield Protocols",
+    "sector_tags": ["Stablecoin", "Governance", "Yield"]
+  },
+  "GRT": {
+    "token_symbol": "GRT",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Infrastructure", "Indexing"]
+  },
+  "IMX": {
+    "token_symbol": "IMX",
+    "sector": "Layer-2",
+    "sector_tags": ["Scaling", "NFT", "Gaming"]
+  },
+  "LDO": {
+    "token_symbol": "LDO",
+    "sector": "Yield Protocols",
+    "sector_tags": ["Liquid Staking", "Governance"]
+  },
+  "LINK": {
+    "token_symbol": "LINK",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Oracle", "Infrastructure"]
+  },
+  "MATIC": {
+    "token_symbol": "MATIC",
+    "sector": "Layer-2",
+    "sector_tags": ["Scaling", "Polygon"]
+  },
+  "MKR": {
+    "token_symbol": "MKR",
+    "sector": "DeFi Governance",
+    "sector_tags": ["Lending", "Stablecoin", "Governance"]
+  },
+  "OP": {
+    "token_symbol": "OP",
+    "sector": "Layer-2",
+    "sector_tags": ["Scaling", "Rollup"]
+  },
+  "RPL": {
+    "token_symbol": "RPL",
+    "sector": "Yield Protocols",
+    "sector_tags": ["Liquid Staking", "Governance"]
+  },
+  "SNX": {
+    "token_symbol": "SNX",
+    "sector": "DeFi Governance",
+    "sector_tags": ["Derivatives", "Governance"]
+  },
+  "SOL": {
+    "token_symbol": "SOL",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Blockchain", "Smart Contracts"]
+  },
+  "SUSHI": {
+    "token_symbol": "SUSHI",
+    "sector": "DEX",
+    "sector_tags": ["DEX", "AMM"]
+  },
+  "UNI": {
+    "token_symbol": "UNI",
+    "sector": "DeFi Governance",
+    "sector_tags": ["DEX", "Governance"]
+  },
+  "USDC": {
+    "token_symbol": "USDC",
+    "sector": "Stablecoins",
+    "sector_tags": ["Stablecoin", "USD-pegged"]
+  },
+  "USDT": {
+    "token_symbol": "USDT",
+    "sector": "Stablecoins",
+    "sector_tags": ["Stablecoin", "USD-pegged"]
+  },
+  "WBTC": {
+    "token_symbol": "WBTC",
+    "sector": "Layer-1 Alts",
+    "sector_tags": ["Wrapped Asset", "Bitcoin"]
+  },
+  "YFI": {
+    "token_symbol": "YFI",
+    "sector": "DeFi Governance",
+    "sector_tags": ["Yield", "Aggregator", "Governance"]
+  }
+}

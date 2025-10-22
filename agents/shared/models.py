@@ -134,6 +134,213 @@ class CorrelationAnalysis(BaseModel):
     narrative: str = Field(..., description="Plain English explanation of correlation risk")
 
 
+class SectorHolding(BaseModel):
+    """Portfolio allocation to a specific sector."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "sector_name": "DeFi Governance",
+                "value_usd": 10912.0,
+                "percentage": 68.0,
+                "token_symbols": ["UNI", "AAVE", "COMP"]
+            }
+        }
+    )
+
+    sector_name: str = Field(..., description="Sector name (e.g., 'DeFi Governance', 'Layer-2')")
+    value_usd: float = Field(..., ge=0, description="Total USD value in this sector")
+    percentage: float = Field(..., ge=0, le=100, description="Percentage of portfolio in this sector")
+    token_symbols: List[str] = Field(default_factory=list, description="Tokens in this sector")
+
+
+class OpportunityCost(BaseModel):
+    """Opportunity cost from over-concentration in a sector."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "missed_sector": "Layer-1 Alts",
+                "missed_token": "SOL",
+                "recovery_gain_pct": 500.0,
+                "narrative": "While your DeFi Governance tokens remained down 60% from peak, SOL gained 500% during the 2023 recovery due to FTX recovery and ecosystem growth."
+            }
+        }
+    )
+
+    missed_sector: str = Field(..., description="Sector that performed well during recovery")
+    missed_token: str = Field(..., description="Best-performing token in missed sector")
+    recovery_gain_pct: float = Field(..., description="Gain percentage during recovery period")
+    narrative: str = Field(..., description="Plain English explanation of missed opportunity")
+
+
+class SectorRisk(BaseModel):
+    """Historical risk and opportunity cost for a concentrated sector."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "sector_name": "DeFi Governance",
+                "crash_scenario": "2022 Bear Market",
+                "sector_loss_pct": -75.0,
+                "market_avg_loss_pct": -55.0,
+                "crash_period": "Nov 2021 - Jun 2022",
+                "opportunity_cost": {
+                    "missed_sector": "Layer-1 Alts",
+                    "missed_token": "SOL",
+                    "recovery_gain_pct": 500.0,
+                    "narrative": "While your DeFi Governance tokens remained down 60% from peak, SOL gained 500% during the 2023 recovery due to FTX recovery and ecosystem growth."
+                }
+            }
+        }
+    )
+
+    sector_name: str = Field(..., description="Concentrated sector name")
+    crash_scenario: str = Field(..., description="Crash scenario name (e.g., '2022 Bear Market')")
+    sector_loss_pct: float = Field(..., description="Sector-specific loss during crash")
+    market_avg_loss_pct: float = Field(..., description="Market average loss for comparison")
+    crash_period: str = Field(..., description="Date range of crash")
+    opportunity_cost: OpportunityCost = Field(..., description="What was missed during recovery")
+
+
+class SectorAnalysis(BaseModel):
+    """Sector concentration analysis results from SectorAgent."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "sector_breakdown": {
+                    "DeFi Governance": {
+                        "sector_name": "DeFi Governance",
+                        "value_usd": 10912.0,
+                        "percentage": 68.0,
+                        "token_symbols": ["UNI", "AAVE", "COMP"]
+                    },
+                    "Layer-2": {
+                        "sector_name": "Layer-2",
+                        "value_usd": 5136.0,
+                        "percentage": 32.0,
+                        "token_symbols": ["MATIC", "OP"]
+                    }
+                },
+                "concentrated_sectors": ["DeFi Governance"],
+                "diversification_score": "High Concentration",
+                "sector_risks": [],
+                "narrative": "68% of your portfolio is concentrated in DeFi Governance tokens."
+            }
+        }
+    )
+
+    sector_breakdown: dict = Field(..., description="Portfolio by sector (Dict[str, SectorHolding])")
+    concentrated_sectors: List[str] = Field(default_factory=list, description="Sectors >60% of portfolio")
+    diversification_score: str = Field(..., description="Well-Diversified | Moderate Concentration | High Concentration")
+    sector_risks: List[SectorRisk] = Field(default_factory=list, description="Sector-specific risks (Story 1.6)")
+    narrative: str = Field(..., description="Plain English explanation of sector concentration")
+
+
+class Recommendation(BaseModel):
+    """
+    Actionable recommendation to improve portfolio structure and reduce risk.
+
+    Recommendations are generated by Guardian synthesis logic to provide specific
+    actions users can take to address identified compounding risks.
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "priority": 1,
+                "action": "Reduce DeFi Governance concentration from 68% to below 40%",
+                "rationale": "68% concentration in DeFi Governance amplifies ETH correlation risk during sector crashes",
+                "expected_impact": "Reducing concentration to 40% would have limited 2022 losses to -60% instead of -75%"
+            }
+        }
+    )
+
+    priority: int = Field(..., ge=1, le=3, description="Priority order (1 = highest, 3 = lowest)")
+    action: str = Field(..., min_length=10, description="Specific action to take")
+    rationale: str = Field(..., min_length=10, description="Why this reduces risk")
+    expected_impact: str = Field(..., min_length=10, description="What improvement to expect")
+
+
+class GuardianSynthesis(BaseModel):
+    """
+    Complete synthesized analysis from Guardian orchestrator.
+
+    Combines correlation and sector analysis to detect compounding risks that
+    multiply when both dimensions are dangerous. Provides cohesive narrative
+    explaining how risks amplify each other, using historical crash data from MeTTa.
+    """
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "correlation_analysis": {
+                    "correlation_coefficient": 0.95,
+                    "correlation_percentage": 95,
+                    "interpretation": "High",
+                    "historical_context": [
+                        {
+                            "crash_name": "2022 Bear Market",
+                            "crash_period": "Nov 2021 - Jun 2022",
+                            "eth_drawdown_pct": -75.3,
+                            "portfolio_loss_pct": -73.2,
+                            "market_avg_loss_pct": -62.5
+                        }
+                    ],
+                    "calculation_period_days": 90,
+                    "narrative": "Your portfolio is 95% correlated to ETH over the past 90 days."
+                },
+                "sector_analysis": {
+                    "sector_breakdown": {
+                        "DeFi Governance": {
+                            "sector_name": "DeFi Governance",
+                            "value_usd": 10912.0,
+                            "percentage": 68.0,
+                            "token_symbols": ["UNI", "AAVE", "COMP"]
+                        }
+                    },
+                    "concentrated_sectors": ["DeFi Governance"],
+                    "diversification_score": "High Concentration",
+                    "sector_risks": [],
+                    "narrative": "68% of your portfolio is concentrated in DeFi Governance tokens."
+                },
+                "compounding_risk_detected": True,
+                "risk_multiplier_effect": "Your 95% ETH correlation acts like 3x leverage, and 68% DeFi Governance concentration means when DeFi Governance crashes, your entire portfolio amplifies the loss.",
+                "recommendations": [],
+                "overall_risk_level": "Critical",
+                "synthesis_narrative": "Your 95% ETH correlation + 68% DeFi Governance concentration creates compounding risk. In 2022 Bear Market, this structure lost 75% (not just 60% from correlation alone)."
+            }
+        }
+    )
+
+    correlation_analysis: CorrelationAnalysis = Field(..., description="Correlation analysis from CorrelationAgent")
+    sector_analysis: SectorAnalysis = Field(..., description="Sector analysis from SectorAgent")
+    compounding_risk_detected: bool = Field(
+        ...,
+        description="True if correlation >85% AND sector concentration >60%"
+    )
+    risk_multiplier_effect: str = Field(
+        ...,
+        min_length=20,
+        description="How correlation + sector risks compound (narrative explanation)"
+    )
+    recommendations: List[Recommendation] = Field(
+        default_factory=list,
+        description="Actionable recommendations (Story 2.4)"
+    )
+    overall_risk_level: str = Field(
+        ...,
+        pattern="^(Low|Moderate|High|Critical)$",
+        description="Overall risk classification: Low | Moderate | High | Critical"
+    )
+    synthesis_narrative: str = Field(
+        ...,
+        min_length=50,
+        description="Cohesive explanation of compounding risks with historical examples"
+    )
+
+
 # uAgents Message Models for inter-agent communication
 # These models inherit from uagents.Model and define message-passing contracts
 # Note: These use dict types for Pydantic v2 models to maintain compatibility with uAgents (Pydantic v1)
@@ -170,3 +377,29 @@ class ErrorMessage(Model):
     error_message: str
     agent_address: str
     retry_recommended: bool
+
+
+class SectorAnalysisResponse(Model):
+    """
+    Response message from SectorAgent containing sector concentration analysis results.
+    Analysis is sent as dict and converted from SectorAnalysis model.
+    """
+    request_id: str
+    wallet_address: str
+    analysis_data: dict  # SectorAnalysis serialized as dict
+    agent_address: str
+    processing_time_ms: int
+
+
+class GuardianAnalysisResponse(Model):
+    """
+    Response message from Guardian to user with combined analysis from specialist agents.
+    Includes both CorrelationAgent and SectorAgent responses (if available).
+    """
+    request_id: str
+    wallet_address: str
+    correlation_analysis: dict | None  # CorrelationAnalysisResponse data (if available)
+    sector_analysis: dict | None  # SectorAnalysisResponse data (if available)
+    response_text: str  # Formatted narrative response for user
+    agent_addresses: dict  # Dict of agent names to addresses consulted
+    total_processing_time_ms: int
