@@ -34,7 +34,7 @@ Guardian uses a **distributed multi-agent architecture** to identify risks that 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                          User (Judge)                           │
+│                          User                          │
 │                  via ASI:One Chat Interface                     │
 └────────────────────────────┬────────────────────────────────────┘
                              │
