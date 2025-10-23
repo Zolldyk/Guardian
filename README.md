@@ -79,9 +79,9 @@ Guardian's multi-agent system consists of three specialized agents deployed on t
 
 | Agent | Address | Purpose |
 |-------|---------|---------|
-| **Guardian** | `@guardianagent` (deployed) | Main orchestrator—send portfolio queries here |
-| **CorrelationAgent** | `@correlationagent` (deployed) | Calculates ETH correlation and crash risk |
-| **SectorAgent** | `@sectoragent` (deployed) | Analyzes sector concentration patterns |
+| **Guardian** | agent1qvq7grn2njv8a4tnxn6cnpvh9236gu42l6pf9cvmdya5yw8lnan25fxz7w0 ; Handle: `@guardianagent` (deployed) | Main orchestrator—send portfolio queries here |
+| **CorrelationAgent** | agent1qg5y0arw0yvt45v6q5c9tx8symzt5ls2w5m245daz78q3yz9pqr756r5svn ; Handle: `@correlationagent` (deployed) | Calculates ETH correlation and crash risk |
+| **SectorAgent** | agent1qws0dupy87yd0egny8uz0gmftrcjalnewf9hpynxgp442473jnhn5uded8e ; `@sectoragent` (deployed) | Analyzes sector concentration patterns |
 
 **How to Query Guardian via ASI:One:**
 
@@ -160,11 +160,11 @@ Analyze wallet 0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58
 
 **Guardian Response:**
 ```
-🛡️ Guardian Portfolio Risk Analysis
+Guardian Portfolio Risk Analysis
 Wallet: 0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58
 Request ID: demo-wallet-1-example
 
-🔗 CorrelationAgent Analysis (agent1qw2e...9z0):
+CorrelationAgent Analysis (agent1qw2e...9z0):
 
 Your portfolio is 95% correlated to ETH. Portfolios with >90% correlation
 lost an average of 73% in the 2022 crash versus 55% market average.
@@ -179,7 +179,7 @@ Historical Context:
 
 ---
 
-🏛️ SectorAgent Analysis (agent2qa3w...7h8):
+SectorAgent Analysis (agent2qa3w...7h8):
 
 68% of your portfolio is concentrated in DeFi Governance tokens. This
 sector lost 75% in the 2022 crash.
@@ -199,7 +199,7 @@ Historical Sector Risks:
 
 ---
 
-🔮 Guardian Synthesis:
+Guardian Synthesis:
 
 Risk Level: Critical
 Compounding Risk Detected: Yes
@@ -238,11 +238,11 @@ both crash together, losses multiply.
 
 ---
 
-⚙️ Agents Consulted:
+Agents Consulted:
 - CorrelationAgent (agent1qw2e...9z0) - 1234ms
 - SectorAgent (agent2qa3w...7h8) - 2345ms
 
-⏱️ Total Analysis Time: 3.6 seconds
+Total Analysis Time: 3.6 seconds
 ```
 
 **What This Demonstrates:**
@@ -259,20 +259,20 @@ For complete sample responses for all three demo wallets, see `docs/sample-respo
 Guardian is designed for **crypto portfolio risk analysis** and has specific limitations judges should be aware of:
 
 **What Guardian Can Do:**
-- ✅ Analyze ETH correlation for crypto portfolios
-- ✅ Detect sector concentration risks across DeFi sectors
-- ✅ Identify compounding risks (correlation + sector concentration)
-- ✅ Provide historical context from 2021-2022 market crashes
-- ✅ Generate prioritized recommendations with expected impact
+- Analyze ETH correlation for crypto portfolios
+- Detect sector concentration risks across DeFi sectors
+- Identify compounding risks (correlation + sector concentration)
+- Provide historical context from 2021-2022 market crashes
+- Generate prioritized recommendations with expected impact
 
 **What Guardian Cannot Do:**
-- ❌ **Real-time portfolio tracking:** Guardian analyzes static demo wallets, not live on-chain data
-- ❌ **Custom wallet support:** MVP supports 3 pre-configured demo wallets only (not arbitrary addresses)
-- ❌ **Traditional finance analysis:** Designed for crypto assets only (no stocks, bonds, forex)
-- ❌ **Smart contract risk:** Does not analyze smart contract vulnerabilities or exploit risks
-- ❌ **Liquidity analysis:** Does not assess token liquidity or slippage risk
-- ❌ **Tax optimization:** No tax-loss harvesting or regulatory compliance advice
-- ❌ **Automated rebalancing:** Provides recommendations but does not execute trades
+- **Real-time portfolio tracking:** Guardian analyzes static demo wallets, not live on-chain data
+- **Custom wallet support:** MVP supports 3 pre-configured demo wallets only (not arbitrary addresses)
+- **Traditional finance analysis:** Designed for crypto assets only (no stocks, bonds, forex)
+- **Smart contract risk:** Does not analyze smart contract vulnerabilities or exploit risks
+- **Liquidity analysis:** Does not assess token liquidity or slippage risk
+- **Tax optimization:** No tax-loss harvesting or regulatory compliance advice
+- **Automated rebalancing:** Provides recommendations but does not execute trades
 
 **MVP Scope:**
 - **Demo Wallets Only:** Test using provided addresses (`0x9aab...`, `0x742d...`, `0xBE0e...`)
