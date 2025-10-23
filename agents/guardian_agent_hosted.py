@@ -273,6 +273,25 @@ def calculate_risk_level(
         return "Low"
 
 
+def truncate_address(address: str) -> str:
+    """
+    Truncate agent address for readability in headers.
+
+    Args:
+        address: Full agent address (e.g., "agent1qw2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9z0")
+
+    Returns:
+        Truncated address (e.g., "agent1qw2e...z0")
+
+    Examples:
+        >>> truncate_address("agent1qw2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9z0")
+        'agent1qw2e...z0'
+    """
+    if len(address) <= 15:
+        return address  # Already short, no truncation needed
+    return f"{address[:10]}...{address[-3:]}"
+
+
 def generate_synthesis_narrative(
     correlation_analysis: dict,
     sector_analysis: dict,
@@ -280,7 +299,7 @@ def generate_synthesis_narrative(
     crash_data: list
 ) -> str:
     """
-    Generate synthesis narrative (pure Python).
+    Generate synthesis narrative with explicit agent attribution (pure Python, Story 2.5).
 
     Args:
         correlation_analysis: Correlation analysis dict
@@ -289,12 +308,13 @@ def generate_synthesis_narrative(
         crash_data: Historical crash data
 
     Returns:
-        Cohesive narrative string
+        Cohesive narrative string with agent references
     """
     correlation_pct = correlation_analysis.get('correlation_percentage', 0)
     concentrated_sectors = sector_analysis.get('concentrated_sectors', [])
 
     if compounding_risk_detected:
+        # Compounding risk portfolio narrative with explicit agent attribution
         concentrated_sector = concentrated_sectors[0] if concentrated_sectors else "Unknown"
         sector_breakdown = sector_analysis.get('sector_breakdown', {})
         concentration_pct = 0
@@ -304,10 +324,16 @@ def generate_synthesis_narrative(
 
         leverage = round(correlation_pct / 30.0, 1)
 
+        # Build narrative with explicit agent references (Story 2.5)
         narrative = (
-            f"Your {correlation_pct}% ETH correlation + {concentration_pct:.0f}% "
-            f"{concentrated_sector} concentration creates compounding risk. "
-            f"This structure acts like {leverage}x leverage to ETH movements. "
+            f"As CorrelationAgent showed, your {correlation_pct}% ETH correlation creates significant exposure to Ethereum price movements. "
+            f"SectorAgent revealed that your {concentration_pct:.0f}% {concentrated_sector} concentration amplifies this risk through sector-specific vulnerabilities. "
+        )
+
+        # Add Guardian's synthesis insight (combining both agents)
+        narrative += (
+            f"Combining these insights, Guardian identifies a compounding risk pattern: "
+            f"this structure acts like {leverage}x leverage to ETH movements. "
         )
 
         if crash_data and len(crash_data) > 0:
@@ -327,13 +353,20 @@ def generate_synthesis_narrative(
 
         narrative += f"{concentrated_sector} sector amplifies ETH correlation—when both crash together, losses multiply."
 
+        print("Generated synthesis narrative with agent attribution (CorrelationAgent, SectorAgent references)")
+
         return narrative
 
     else:
+        # Well-diversified portfolio narrative with explicit agent attribution
         narrative = (
-            f"Your {correlation_pct}% ETH correlation is manageable, "
-            f"and no sector exceeds 30% concentration. "
-            f"This balanced structure limits compounding risks. "
+            f"CorrelationAgent calculated your {correlation_pct}% ETH correlation as manageable. "
+            f"According to SectorAgent's analysis, no sector exceeds 30% concentration. "
+        )
+
+        # Add Guardian's synthesis insight
+        narrative += (
+            "Combining these findings, Guardian confirms this balanced structure limits compounding risks. "
         )
 
         if crash_data and len(crash_data) > 0:
@@ -348,6 +381,8 @@ def generate_synthesis_narrative(
                 f"During {crash_name}, well-diversified portfolios like yours lost around "
                 f"{market_avg_loss:.0f}% versus -75% for concentrated portfolios."
             )
+
+        print("Generated diversified portfolio synthesis narrative with agent attribution")
 
         return narrative
 
@@ -756,6 +791,412 @@ def synthesis_analysis(
         raise
 
 
+# =============================================================================
+# MULTI-TURN CONVERSATION CONTEXT MANAGEMENT (Story 3.1)
+# =============================================================================
+
+def init_conversation_state(session_id: str, wallet_address: str, portfolio_data: dict) -> dict:
+    """
+    Initialize conversation state for a new analysis session.
+
+    Args:
+        session_id: Unique session identifier
+        wallet_address: Ethereum wallet address
+        portfolio_data: Portfolio data dict from demo wallet
+
+    Returns:
+        Initialized conversation state dict
+    """
+    return {
+        "session_id": session_id,
+        "wallet_address": wallet_address,
+        "portfolio_data": portfolio_data,
+        "correlation_analysis": None,
+        "sector_analysis": None,
+        "synthesis": None,
+        "conversation_history": [],
+        "last_update": datetime.utcnow().isoformat()
+    }
+
+
+def get_conversation_state(ctx: Context) -> dict | None:
+    """
+    Retrieve conversation state from session storage.
+
+    Args:
+        ctx: uAgents context
+
+    Returns:
+        Conversation state dict or None if not found
+    """
+    session_key = f"conversation_{ctx.session}"
+    state = ctx.storage.get(session_key)
+
+    if state:
+        ctx.logger.info(f"Session {ctx.session}: Retrieved conversation state for wallet {state.get('wallet_address', 'unknown')}")
+
+    return state
+
+
+def update_conversation_state(
+    ctx: Context,
+    state: dict,
+    user_message: str,
+    guardian_response: str,
+    correlation_response: dict | None = None,
+    sector_response: dict | None = None,
+    synthesis: dict | None = None
+) -> dict:
+    """
+    Update conversation state with new exchange and analysis results.
+
+    Args:
+        ctx: uAgents context
+        state: Current conversation state
+        user_message: User's message text
+        guardian_response: Guardian's response text
+        correlation_response: Optional CorrelationAgent response
+        sector_response: Optional SectorAgent response
+        synthesis: Optional synthesis results
+
+    Returns:
+        Updated conversation state dict
+    """
+    # Update analysis results if provided
+    if correlation_response:
+        state["correlation_analysis"] = correlation_response.get('analysis_data', {})
+
+    if sector_response:
+        state["sector_analysis"] = sector_response.get('analysis_data', {})
+
+    if synthesis:
+        state["synthesis"] = synthesis
+
+    # Add to conversation history
+    exchange = {
+        "user_message": user_message,
+        "guardian_response": guardian_response,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+    state["conversation_history"].append(exchange)
+
+    # Prune history to max 10 exchanges
+    if len(state["conversation_history"]) > 10:
+        state["conversation_history"] = state["conversation_history"][-10:]
+        ctx.logger.info(f"Session {ctx.session}: Pruned conversation history to 10 exchanges")
+
+    # Update timestamp
+    state["last_update"] = datetime.utcnow().isoformat()
+
+    # Store updated state
+    session_key = f"conversation_{ctx.session}"
+    ctx.storage.set(session_key, state)
+
+    ctx.logger.info(f"Session {ctx.session}: Updated conversation state (total exchanges: {len(state['conversation_history'])})")
+
+    return state
+
+
+def classify_follow_up_question(message_text: str) -> str:
+    """
+    Classify follow-up question type for response routing.
+
+    Args:
+        message_text: User's message text
+
+    Returns:
+        Question type: "correlation" | "sector" | "recommendation" | "crash_context" | "unclear"
+    """
+    message_lower = message_text.lower()
+
+    # Correlation questions
+    if any(keyword in message_lower for keyword in ["correlation", "correlated", "eth correlation", "eth price"]):
+        return "correlation"
+
+    # Sector questions
+    if any(keyword in message_lower for keyword in ["sector", "concentration", "governance", "defi", "gaming"]):
+        return "sector"
+
+    # Recommendation questions
+    if any(keyword in message_lower for keyword in ["what should", "how can", "recommend", "what do", "should i"]):
+        return "recommendation"
+
+    # Crash context questions
+    if any(keyword in message_lower for keyword in ["2022", "2021", "2020", "crash", "historical", "bear market"]):
+        return "crash_context"
+
+    # Unclear
+    return "unclear"
+
+
+def is_unclear_question(message_text: str) -> bool:
+    """
+    Detect unclear or unsupported questions.
+
+    Args:
+        message_text: User's message text
+
+    Returns:
+        True if question is unclear or unsupported
+    """
+    message_lower = message_text.lower().strip()
+
+    # Empty or very short
+    if len(message_text) < 3:
+        return True
+
+    # Off-topic requests (investment advice)
+    off_topic_keywords = ["price prediction", "investment advice", "buy", "sell", "trade", "moon", "wen"]
+    if any(keyword in message_lower for keyword in off_topic_keywords):
+        return True
+
+    # Gibberish detection (no vowels)
+    if not any(c in 'aeiou' for c in message_lower):
+        return True
+
+    return False
+
+
+def generate_correlation_followup_response(correlation_analysis: dict, user_question: str) -> str:
+    """
+    Generate follow-up response for correlation questions.
+
+    Args:
+        correlation_analysis: Stored correlation analysis data
+        user_question: User's follow-up question
+
+    Returns:
+        Formatted response text
+    """
+    correlation_pct = correlation_analysis.get('correlation_percentage', 0)
+    interpretation = correlation_analysis.get('interpretation', 'unknown')
+
+    # Build response with contextual reference
+    response_parts = [
+        f"As I mentioned, your portfolio has {correlation_pct}% correlation to ETH. "
+        f"This is considered {interpretation} correlation.\n\n"
+    ]
+
+    # Add explanation based on question
+    if "high" in user_question.lower() or "why" in user_question.lower():
+        response_parts.append(
+            "This means your portfolio moves very closely with Ethereum's price. "
+            "When ETH drops, your portfolio typically drops by a similar percentage. "
+        )
+
+    # Add historical context if available
+    historical_context = correlation_analysis.get('historical_context', [])
+    if historical_context:
+        crash = historical_context[0]
+        response_parts.append(
+            f"\n\nBased on historical data from {crash.get('crash_name', '2022 Bear Market')}:\n"
+            f"- Portfolios with {correlation_pct}% correlation lost approximately {crash.get('portfolio_loss_pct', -75)}%\n"
+            f"- Market average loss was {crash.get('market_avg_loss_pct', -55)}%\n"
+        )
+
+    # Add recommendation hint
+    response_parts.append(
+        "\n\nTo reduce correlation risk, consider adding uncorrelated assets like Bitcoin, "
+        "Alternative Layer-1s, or Stablecoins to your portfolio."
+    )
+
+    return "".join(response_parts)
+
+
+def generate_sector_followup_response(sector_analysis: dict, user_question: str) -> str:
+    """
+    Generate follow-up response for sector questions.
+
+    Args:
+        sector_analysis: Stored sector analysis data
+        user_question: User's follow-up question
+
+    Returns:
+        Formatted response text
+    """
+    concentrated_sectors = sector_analysis.get('concentrated_sectors', [])
+
+    if not concentrated_sectors:
+        return "Building on the sector analysis, your portfolio has no significant sector concentration (all sectors <60%)."
+
+    sector_name = concentrated_sectors[0]
+    sector_breakdown = sector_analysis.get('sector_breakdown', {})
+    sector_pct = 0
+
+    if sector_name in sector_breakdown:
+        sector_pct = sector_breakdown[sector_name].get('percentage', 0)
+
+    # Build response with contextual reference
+    response_parts = [
+        f"Building on the sector analysis, your portfolio has {sector_pct:.0f}% "
+        f"concentrated in {sector_name}.\n\n"
+    ]
+
+    # Add risk explanation
+    response_parts.append(
+        f"This concentration is risky because:\n"
+    )
+
+    # Add sector-specific risks if available
+    sector_risks = sector_analysis.get('sector_risks', [])
+    sector_risk = next(
+        (risk for risk in sector_risks if risk.get('sector_name') == sector_name),
+        None
+    )
+
+    if sector_risk:
+        response_parts.append(
+            f"- In {sector_risk.get('crash_scenario', '2022 Bear Market')}, "
+            f"{sector_name} sector lost {sector_risk.get('sector_loss_pct', -75):.0f}%\n"
+        )
+
+        opportunity_cost = sector_risk.get('opportunity_cost')
+        if opportunity_cost:
+            response_parts.append(
+                f"- You missed {opportunity_cost.get('recovery_gain_pct', 500):.0f}% recovery gains "
+                f"during the rebound\n"
+            )
+
+    # Add recommendation hint
+    response_parts.append(
+        f"\n\nTo reduce sector risk, consider reducing {sector_name} concentration to below 40%."
+    )
+
+    return "".join(response_parts)
+
+
+def generate_recommendation_followup_response(synthesis: dict, user_question: str) -> str:
+    """
+    Generate follow-up response for recommendation questions.
+
+    Args:
+        synthesis: Stored synthesis data with recommendations
+        user_question: User's follow-up question
+
+    Returns:
+        Formatted response text
+    """
+    recommendations = synthesis.get('recommendations', [])
+
+    if not recommendations:
+        return "Based on your portfolio's risk profile, I recommend maintaining your current balanced structure."
+
+    # Build response with context
+    response_parts = [
+        "Based on your portfolio's risk profile, here are my prioritized recommendations:\n\n"
+    ]
+
+    # Format recommendations with priority
+    for idx, rec in enumerate(recommendations, 1):
+        response_parts.append(
+            f"{idx}. {rec.get('action', '')}\n"
+            f"   - **Why:** {rec.get('rationale', '')}\n"
+            f"   - **Expected Impact:** {rec.get('expected_impact', '')}\n\n"
+        )
+
+    # Add note about addressing user's concern if mentioned in question
+    if "correlation" in user_question.lower():
+        response_parts.append(
+            "These recommendations specifically address your correlation risk concerns."
+        )
+    elif "sector" in user_question.lower() or "concentration" in user_question.lower():
+        response_parts.append(
+            "These recommendations specifically address your sector concentration concerns."
+        )
+
+    return "".join(response_parts)
+
+
+def generate_crash_context_followup_response(correlation_analysis: dict, user_question: str) -> str:
+    """
+    Generate follow-up response for crash context questions.
+
+    Args:
+        correlation_analysis: Stored correlation analysis data
+        user_question: User's follow-up question
+
+    Returns:
+        Formatted response text
+    """
+    historical_context = correlation_analysis.get('historical_context', [])
+
+    if not historical_context:
+        return (
+            "I don't have specific historical crash data for your correlation level. "
+            "Generally, high ETH correlation means your portfolio closely follows ETH's price movements."
+        )
+
+    # Build response with crash details
+    response_parts = []
+
+    for crash in historical_context:
+        crash_name = crash.get('crash_name', '2022 Bear Market')
+        crash_period = crash.get('crash_period', '2022-Q2')
+        portfolio_loss = crash.get('portfolio_loss_pct', -75)
+        market_avg_loss = crash.get('market_avg_loss_pct', -55)
+
+        response_parts.append(
+            f"**{crash_name}** ({crash_period}):\n"
+            f"- Portfolios with your correlation level lost approximately {portfolio_loss:.0f}%\n"
+            f"- Market average loss was {market_avg_loss:.0f}%\n"
+            f"- Your portfolio would have underperformed the market by {abs(portfolio_loss - market_avg_loss):.0f}%\n\n"
+        )
+
+    response_parts.append(
+        "This historical context shows why reducing correlation is important for portfolio resilience."
+    )
+
+    return "".join(response_parts)
+
+
+def generate_clarification_response(conversation_state: dict | None) -> str:
+    """
+    Generate clarification prompt for unclear questions.
+
+    Args:
+        conversation_state: Current conversation state (if any)
+
+    Returns:
+        Clarification prompt text
+    """
+    if conversation_state and conversation_state.get('synthesis'):
+        # User has existing analysis - suggest relevant follow-ups
+        return (
+            "I'm not sure I understood your question. Here are some things I can help with:\n\n"
+            "- Explain correlation analysis: \"Why is my correlation high?\"\n"
+            "- Explain sector concentration: \"Why is governance concentration risky?\"\n"
+            "- Provide recommendations: \"What should I do about this risk?\"\n"
+            "- Explain crash context: \"What happened in the 2022 crash?\"\n\n"
+            "What would you like to know?"
+        )
+    else:
+        # No existing analysis - prompt for wallet analysis
+        return (
+            "I'm not sure I understood your request. I specialize in portfolio risk analysis.\n\n"
+            "To get started, please provide a wallet address to analyze:\n"
+            "Example: \"Analyze wallet 0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58\"\n\n"
+            "I can help you understand correlation risks, sector concentration, and historical crash performance."
+        )
+
+
+def generate_offtopic_response() -> str:
+    """
+    Generate response for off-topic requests.
+
+    Returns:
+        Off-topic response text
+    """
+    return (
+        "I specialize in portfolio risk analysis, not investment advice or price predictions.\n\n"
+        "I can help you understand:\n"
+        "- Your portfolio's correlation to ETH\n"
+        "- Sector concentration risks\n"
+        "- Historical crash performance\n"
+        "- Risk reduction strategies\n\n"
+        "Would you like to analyze a wallet address?"
+    )
+
+
 def format_combined_response(
     request_id: str,
     wallet_address: str,
@@ -765,7 +1206,14 @@ def format_combined_response(
     total_time_ms: int
 ) -> str:
     """
-    Format combined analysis response for user.
+    Format combined analysis response for user with full transparency (Story 2.5).
+
+    This function implements Story 2.5 transparency requirements by:
+    - Presenting specialist agent responses verbatim
+    - Displaying agent addresses for verifiability
+    - Showing per-agent timing information
+    - Using clear section separators
+    - Providing detailed error transparency when agents timeout
 
     Args:
         request_id: Request identifier
@@ -776,8 +1224,14 @@ def format_combined_response(
         total_time_ms: Total processing time in milliseconds
 
     Returns:
-        Formatted narrative text for user
+        Formatted narrative text for user with transparency features
     """
+    print(
+        f"Formatting Guardian response with transparency features. "
+        f"correlation_response={'present' if correlation_response else 'None'}, "
+        f"sector_response={'present' if sector_response else 'None'}"
+    )
+
     lines = [
         "🛡️ Guardian Portfolio Risk Analysis\n",
         f"Wallet: {wallet_address}\n",
@@ -787,7 +1241,12 @@ def format_combined_response(
 
     # CorrelationAgent Analysis Section
     if correlation_response:
-        lines.append("📊 CorrelationAgent Analysis:\n")
+        # Add truncated address to header for verifiability
+        agent_addr = correlation_response.get('agent_address', 'N/A')
+        truncated_addr = truncate_address(agent_addr)
+        print(f"Truncating CorrelationAgent address: {agent_addr} -> {truncated_addr}")
+
+        lines.append(f"🔗 CorrelationAgent Analysis ({truncated_addr}):\n\n")
         analysis_data = correlation_response.get("analysis_data", {})
         lines.append(f"{analysis_data.get('narrative', 'Analysis data unavailable')}\n")
 
@@ -802,15 +1261,29 @@ def format_combined_response(
                     f"(vs. {crash['market_avg_loss_pct']:.1f}% market average)\n"
                 )
 
-        lines.append(f"\n(Agent: {correlation_response.get('agent_address', 'N/A')}, "
-                    f"Processing: {correlation_response.get('processing_time_ms', 0)}ms)\n\n")
+        # Display processing time prominently
+        lines.append(f"\n(Processing: {correlation_response.get('processing_time_ms', 0)}ms)\n\n")
+
+        # Add section separator
+        lines.append("---\n\n")
     else:
-        lines.append("📊 CorrelationAgent Analysis:\n")
-        lines.append("⚠️ Correlation analysis unavailable (agent timeout)\n\n")
+        lines.append("🔗 CorrelationAgent Analysis:\n\n")
+        # Enhanced error transparency - explain timeout clearly
+        lines.append(
+            f"⚠️ CorrelationAgent did not respond within {AGENT_RESPONSE_TIMEOUT} seconds (timeout). "
+            "Proceeding with SectorAgent results only. Analysis may have reduced historical context.\n\n"
+        )
+        lines.append("---\n\n")
+        print("ERROR: CorrelationAgent timeout - no response received within AGENT_RESPONSE_TIMEOUT")
 
     # SectorAgent Analysis Section
     if sector_response:
-        lines.append("🏛️ SectorAgent Analysis:\n")
+        # Add truncated address to header for verifiability
+        agent_addr = sector_response.get('agent_address', 'N/A')
+        truncated_addr = truncate_address(agent_addr)
+        print(f"Truncating SectorAgent address: {agent_addr} -> {truncated_addr}")
+
+        lines.append(f"🏛️ SectorAgent Analysis ({truncated_addr}):\n\n")
         analysis_data = sector_response.get("analysis_data", {})
         lines.append(f"{analysis_data.get('narrative', 'Analysis data unavailable')}\n")
 
@@ -838,15 +1311,24 @@ def format_combined_response(
                     opp_cost = risk['opportunity_cost']
                     lines.append(f"  Opportunity Cost: {opp_cost['narrative']}\n")
 
-        lines.append(f"\n(Agent: {sector_response.get('agent_address', 'N/A')}, "
-                    f"Processing: {sector_response.get('processing_time_ms', 0)}ms)\n\n")
+        # Display processing time prominently
+        lines.append(f"\n(Processing: {sector_response.get('processing_time_ms', 0)}ms)\n\n")
+
+        # Add section separator
+        lines.append("---\n\n")
     else:
-        lines.append("🏛️ SectorAgent Analysis:\n")
-        lines.append("⚠️ Sector analysis unavailable (agent timeout)\n\n")
+        lines.append("🏛️ SectorAgent Analysis:\n\n")
+        # Enhanced error transparency - explain timeout clearly
+        lines.append(
+            f"⚠️ SectorAgent did not respond within {AGENT_RESPONSE_TIMEOUT} seconds (timeout). "
+            "Proceeding with CorrelationAgent results only. Analysis may be incomplete.\n\n"
+        )
+        lines.append("---\n\n")
+        print("ERROR: SectorAgent timeout - no response received within AGENT_RESPONSE_TIMEOUT")
 
     # Guardian Synthesis Section (Story 2.3)
     if synthesis:
-        lines.append("🔮 Guardian Synthesis:\n")
+        lines.append("🔮 Guardian Synthesis:\n\n")
         lines.append(f"Risk Level: {synthesis.get('overall_risk_level', 'Unknown')}\n")
         lines.append(f"Compounding Risk Detected: {'Yes' if synthesis.get('compounding_risk_detected') else 'No'}\n\n")
         lines.append(f"{synthesis.get('synthesis_narrative', '')}\n\n")
@@ -859,17 +1341,32 @@ def format_combined_response(
                 lines.append(f"{idx}. {rec.get('action', '')}\n")
                 lines.append(f"   - **Why:** {rec.get('rationale', '')}\n")
                 lines.append(f"   - **Expected Impact:** {rec.get('expected_impact', '')}\n\n")
+
+        # Add section separator after synthesis
+        lines.append("---\n\n")
     else:
         if correlation_response and sector_response:
-            lines.append("🔮 Guardian Synthesis:\n")
-            lines.append("⚠️ Synthesis analysis unavailable (synthesis error)\n\n")
+            # Both responses available but synthesis failed
+            lines.append("🔮 Guardian Synthesis:\n\n")
+            lines.append(
+                "⚠️ Guardian synthesis encountered an error while combining agent insights. "
+                "Individual agent analyses are available above.\n\n"
+            )
+            lines.append("---\n\n")
+            print("ERROR: Guardian synthesis failed - displaying individual agent analyses only")
 
-    # Summary section
+    # Enhanced Summary Section (Story 2.5 - Task 7)
     lines.append("⚙️ Agents Consulted:\n")
     if correlation_response:
-        lines.append(f"- CorrelationAgent ({correlation_response.get('agent_address', 'N/A')})\n")
+        lines.append(
+            f"- CorrelationAgent ({correlation_response.get('agent_address', 'N/A')}) - "
+            f"{correlation_response.get('processing_time_ms', 0)}ms\n"
+        )
     if sector_response:
-        lines.append(f"- SectorAgent ({sector_response.get('agent_address', 'N/A')})\n")
+        lines.append(
+            f"- SectorAgent ({sector_response.get('agent_address', 'N/A')}) - "
+            f"{sector_response.get('processing_time_ms', 0)}ms\n"
+        )
 
     lines.append(f"\n⏱️ Total Analysis Time: {total_time_ms / 1000:.1f} seconds\n")
 
@@ -901,8 +1398,8 @@ struct_output_proto = Protocol(
 @chat_proto.on_message(ChatMessage)
 async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
     """
-    Handle incoming ChatMessage from ASI1 LLM.
-    Extracts user query and forwards to AI agent for parameter extraction.
+    Handle incoming ChatMessage from ASI1 LLM with multi-turn support (Story 3.1).
+    Detects follow-up questions and routes to appropriate response generation.
     """
     ctx.logger.info(f"📨 Received ChatMessage from {sender}")
 
@@ -926,20 +1423,109 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
 
         elif isinstance(content, EndSessionContent):
             ctx.logger.info(f"🔴 Session ended with {sender}")
+            # Clear conversation state on session end
+            session_key = f"conversation_{ctx.session}"
+            ctx.storage.set(session_key, None)
+            ctx.logger.info(f"Session {ctx.session}: Cleared conversation state")
             continue
 
         elif isinstance(content, TextContent):
-            ctx.logger.info(f"💬 User query: {content.text}")
+            user_message = content.text
+            ctx.logger.info(f"💬 User query: {user_message}")
 
             # Store query text for potential regex fallback
-            ctx.storage.set(f"query_{ctx.session}", content.text)
+            ctx.storage.set(f"query_{ctx.session}", user_message)
+
+            # Check for existing conversation state (Story 3.1)
+            conversation_state = get_conversation_state(ctx)
+
+            # Check for unclear or off-topic questions (Story 3.1 - Error Recovery)
+            if is_unclear_question(user_message):
+                ctx.logger.info(f"Session {ctx.session}: Unclear question detected")
+
+                # Check if this is an off-topic request
+                if any(keyword in user_message.lower() for keyword in ["price prediction", "investment advice", "buy", "sell", "trade"]):
+                    response_text = generate_offtopic_response()
+                else:
+                    response_text = generate_clarification_response(conversation_state)
+
+                # Send clarification response
+                clarification_msg = ChatMessage(
+                    content=[TextContent(text=response_text)],
+                    msg_id=uuid4(),
+                    timestamp=datetime.now(timezone.utc)
+                )
+                await ctx.send(sender, clarification_msg)
+
+                # Update conversation history if state exists
+                if conversation_state:
+                    update_conversation_state(ctx, conversation_state, user_message, response_text)
+
+                return
+
+            # Follow-up question handling (Story 3.1)
+            if conversation_state:
+                ctx.logger.info(f"Session {ctx.session}: Detected existing conversation state - checking for follow-up question")
+
+                # Classify question type
+                question_type = classify_follow_up_question(user_message)
+                ctx.logger.info(f"Session {ctx.session}: Classified question as '{question_type}'")
+
+                # Generate follow-up response if applicable
+                followup_response = None
+
+                if question_type == "correlation" and conversation_state.get('correlation_analysis'):
+                    followup_response = generate_correlation_followup_response(
+                        conversation_state['correlation_analysis'],
+                        user_message
+                    )
+                elif question_type == "sector" and conversation_state.get('sector_analysis'):
+                    followup_response = generate_sector_followup_response(
+                        conversation_state['sector_analysis'],
+                        user_message
+                    )
+                elif question_type == "recommendation" and conversation_state.get('synthesis'):
+                    followup_response = generate_recommendation_followup_response(
+                        conversation_state['synthesis'],
+                        user_message
+                    )
+                elif question_type == "crash_context" and conversation_state.get('correlation_analysis'):
+                    followup_response = generate_crash_context_followup_response(
+                        conversation_state['correlation_analysis'],
+                        user_message
+                    )
+
+                # Send follow-up response if generated
+                if followup_response:
+                    start_time = time.time()
+
+                    followup_msg = ChatMessage(
+                        content=[TextContent(text=followup_response)],
+                        msg_id=uuid4(),
+                        timestamp=datetime.now(timezone.utc)
+                    )
+                    await ctx.send(sender, followup_msg)
+
+                    elapsed_ms = int((time.time() - start_time) * 1000)
+                    ctx.logger.info(f"Session {ctx.session}: Generated follow-up response in {elapsed_ms}ms")
+
+                    # Update conversation history
+                    update_conversation_state(ctx, conversation_state, user_message, followup_response)
+
+                    return
+
+                # If not a follow-up or classification unclear, check for new wallet analysis request
+
+            # Check if this is a new wallet analysis request (initial or follow-up)
+            # Extract wallet address for analysis
+            wallet_address_extracted = False
 
             # Forward to AI agent for structured parameter extraction
             try:
                 await ctx.send(
                     AI_AGENT_ADDRESS,
                     StructuredOutputPrompt(
-                        prompt=content.text,
+                        prompt=user_message,
                         output_schema={
                             "type": "object",
                             "properties": {
@@ -952,18 +1538,29 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
                         }
                     ),
                 )
+                wallet_address_extracted = True
             except Exception as e:
                 # AI agent unavailable - fall back to regex extraction
                 ctx.logger.warning(f"⚠️ AI extraction failed: {e}, falling back to regex")
-                wallet_address = extract_wallet_address_regex(content.text)
+                wallet_address = extract_wallet_address_regex(user_message)
 
                 if not wallet_address:
+                    # No wallet address found - send context loss message
+                    if conversation_state:
+                        error_text = (
+                            "I don't have your portfolio analysis in this session. "
+                            "Please provide a wallet address to analyze.\n\n"
+                            "Example: \"Analyze wallet 0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58\""
+                        )
+                    else:
+                        error_text = (
+                            "Sorry, I couldn't find a valid Ethereum wallet address in your request. "
+                            "Please provide a wallet address in the format: 0x... (40 hex characters)\n\n"
+                            "(Note: AI parameter extraction is temporarily unavailable, using pattern matching)"
+                        )
+
                     error_response = ChatMessage(
-                        content=[TextContent(
-                            text="Sorry, I couldn't find a valid Ethereum wallet address in your request. "
-                                 "Please provide a wallet address in the format: 0x... (40 hex characters)\n\n"
-                                 "(Note: AI parameter extraction is temporarily unavailable, using pattern matching)"
-                        )],
+                        content=[TextContent(text=error_text)],
                         msg_id=uuid4(),
                         timestamp=datetime.now(timezone.utc)
                     )
@@ -1070,9 +1667,32 @@ async def handle_structured_output(ctx: Context, sender: str, msg: StructuredOut
         # Generate unique request ID
         request_id = str(uuid4())
 
+        # Initialize or update conversation state (Story 3.1)
+        conversation_state = get_conversation_state(ctx)
+        if not conversation_state:
+            conversation_state = init_conversation_state(
+                session_id=str(ctx.session),
+                wallet_address=wallet_address,
+                portfolio_data=portfolio_data
+            )
+            session_key = f"conversation_{ctx.session}"
+            ctx.storage.set(session_key, conversation_state)
+            ctx.logger.info(f"Session {ctx.session}: Initialized new conversation state for wallet {wallet_address}")
+        else:
+            # Update existing state with new wallet data
+            conversation_state["wallet_address"] = wallet_address
+            conversation_state["portfolio_data"] = portfolio_data
+            session_key = f"conversation_{ctx.session}"
+            ctx.storage.set(session_key, conversation_state)
+            ctx.logger.info(f"Session {ctx.session}: Updated conversation state with new wallet {wallet_address}")
+
         # Store analysis state
         ctx.storage.set(f"request_{request_id}_start_time", start_time)
         ctx.storage.set(f"request_{request_id}_wallet", wallet_address)
+
+        # Store user message for conversation history
+        user_query = ctx.storage.get(f"query_{ctx.session}")
+        ctx.storage.set(f"request_{request_id}_user_message", user_query or f"Analyze wallet {wallet_address}")
 
         # Send analysis requests to specialist agents
         if CORRELATION_AGENT_ADDRESS:
@@ -1224,6 +1844,22 @@ async def check_and_send_combined_response(ctx: Context, request_id: str):
     )
     await ctx.send(session_sender, chat_response)
     ctx.logger.info(f"📤 Sent combined analysis to {session_sender} ({total_time_ms}ms)")
+
+    # Update conversation state with analysis results (Story 3.1)
+    conversation_state = get_conversation_state(ctx)
+    if conversation_state:
+        user_message = ctx.storage.get(f"request_{request_id}_user_message")
+        if user_message:
+            update_conversation_state(
+                ctx,
+                conversation_state,
+                user_message,
+                response_text,
+                correlation_response,
+                sector_response,
+                synthesis
+            )
+            ctx.logger.info(f"Session {ctx.session}: Updated conversation state with analysis results")
 
 
 # =============================================================================

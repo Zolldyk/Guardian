@@ -139,6 +139,25 @@ async def wait_for_response(
     return None
 
 
+def truncate_address(address: str) -> str:
+    """
+    Truncate agent address for readability in headers.
+
+    Args:
+        address: Full agent address (e.g., "agent1qw2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9z0")
+
+    Returns:
+        Truncated address (e.g., "agent1qw2e...z0")
+
+    Examples:
+        >>> truncate_address("agent1qw2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9z0")
+        'agent1qw2e...z0'
+    """
+    if len(address) <= 15:
+        return address  # Already short, no truncation needed
+    return f"{address[:10]}...{address[-3:]}"
+
+
 def format_combined_response(
     request_id: str,
     wallet_address: str,
@@ -148,7 +167,14 @@ def format_combined_response(
     total_time_ms: int
 ) -> str:
     """
-    Format combined analysis response for user.
+    Format combined analysis response for user with full transparency.
+
+    This function implements Story 2.5 transparency requirements by:
+    - Presenting specialist agent responses verbatim
+    - Displaying agent addresses for verifiability
+    - Showing per-agent timing information
+    - Using clear section separators
+    - Providing detailed error transparency when agents timeout
 
     Args:
         request_id: Request identifier
@@ -159,8 +185,14 @@ def format_combined_response(
         total_time_ms: Total processing time in milliseconds
 
     Returns:
-        Formatted narrative text for user
+        Formatted narrative text for user with transparency features
     """
+    logger.info(
+        f"Formatting Guardian response with transparency features. "
+        f"correlation_response={'present' if correlation_response else 'None'}, "
+        f"sector_response={'present' if sector_response else 'None'}"
+    )
+
     response_parts = [
         "🛡️ Guardian Portfolio Risk Analysis\n",
         f"Wallet: {wallet_address}\n",
@@ -170,7 +202,11 @@ def format_combined_response(
 
     # CorrelationAgent Analysis Section
     if correlation_response:
-        response_parts.append("📊 CorrelationAgent Analysis:\n")
+        # Add truncated address to header for verifiability
+        truncated_addr = truncate_address(correlation_response.agent_address)
+        logger.info(f"Truncating CorrelationAgent address: {correlation_response.agent_address} -> {truncated_addr}")
+
+        response_parts.append(f"🔗 CorrelationAgent Analysis ({truncated_addr}):\n\n")
         analysis_data = correlation_response.analysis_data
         response_parts.append(f"{analysis_data.get('narrative', 'Analysis data unavailable')}\n")
 
@@ -185,15 +221,28 @@ def format_combined_response(
                     f"(vs. {crash['market_avg_loss_pct']:.1f}% market average)\n"
                 )
 
-        response_parts.append(f"\n(Agent: {correlation_response.agent_address}, "
-                            f"Processing: {correlation_response.processing_time_ms}ms)\n\n")
+        # Display processing time prominently
+        response_parts.append(f"\n(Processing: {correlation_response.processing_time_ms}ms)\n\n")
+
+        # Add section separator
+        response_parts.append("---\n\n")
     else:
-        response_parts.append("📊 CorrelationAgent Analysis:\n")
-        response_parts.append("⚠️ Correlation analysis unavailable (agent timeout)\n\n")
+        response_parts.append("🔗 CorrelationAgent Analysis:\n\n")
+        # Enhanced error transparency - explain timeout clearly
+        response_parts.append(
+            f"⚠️ CorrelationAgent did not respond within {AGENT_RESPONSE_TIMEOUT} seconds (timeout). "
+            "Proceeding with SectorAgent results only. Analysis may have reduced historical context.\n\n"
+        )
+        response_parts.append("---\n\n")
+        logger.error("CorrelationAgent timeout - no response received within AGENT_RESPONSE_TIMEOUT")
 
     # SectorAgent Analysis Section
     if sector_response:
-        response_parts.append("🏛️ SectorAgent Analysis:\n")
+        # Add truncated address to header for verifiability
+        truncated_addr = truncate_address(sector_response.agent_address)
+        logger.info(f"Truncating SectorAgent address: {sector_response.agent_address} -> {truncated_addr}")
+
+        response_parts.append(f"🏛️ SectorAgent Analysis ({truncated_addr}):\n\n")
         analysis_data = sector_response.analysis_data
         response_parts.append(f"{analysis_data.get('narrative', 'Analysis data unavailable')}\n")
 
@@ -221,15 +270,24 @@ def format_combined_response(
                     opp_cost = risk['opportunity_cost']
                     response_parts.append(f"  Opportunity Cost: {opp_cost['narrative']}\n")
 
-        response_parts.append(f"\n(Agent: {sector_response.agent_address}, "
-                            f"Processing: {sector_response.processing_time_ms}ms)\n\n")
+        # Display processing time prominently
+        response_parts.append(f"\n(Processing: {sector_response.processing_time_ms}ms)\n\n")
+
+        # Add section separator
+        response_parts.append("---\n\n")
     else:
-        response_parts.append("🏛️ SectorAgent Analysis:\n")
-        response_parts.append("⚠️ Sector analysis unavailable (agent timeout)\n\n")
+        response_parts.append("🏛️ SectorAgent Analysis:\n\n")
+        # Enhanced error transparency - explain timeout clearly
+        response_parts.append(
+            f"⚠️ SectorAgent did not respond within {AGENT_RESPONSE_TIMEOUT} seconds (timeout). "
+            "Proceeding with CorrelationAgent results only. Analysis may be incomplete.\n\n"
+        )
+        response_parts.append("---\n\n")
+        logger.error("SectorAgent timeout - no response received within AGENT_RESPONSE_TIMEOUT")
 
     # Guardian Synthesis Section (new in Story 2.3)
     if synthesis:
-        response_parts.append("🔮 Guardian Synthesis:\n")
+        response_parts.append("🔮 Guardian Synthesis:\n\n")
         response_parts.append(f"Risk Level: {synthesis.overall_risk_level}\n")
         response_parts.append(f"Compounding Risk Detected: {'Yes' if synthesis.compounding_risk_detected else 'No'}\n\n")
         response_parts.append(f"{synthesis.synthesis_narrative}\n\n")
@@ -244,18 +302,32 @@ def format_combined_response(
                 response_parts.append(f"{idx}. {rec.action}\n")
                 response_parts.append(f"   - **Why:** {rec.rationale}\n")
                 response_parts.append(f"   - **Expected Impact:** {rec.expected_impact}\n\n")
+
+        # Add section separator after synthesis
+        response_parts.append("---\n\n")
     else:
         if correlation_response and sector_response:
             # Both responses available but synthesis failed
-            response_parts.append("🔮 Guardian Synthesis:\n")
-            response_parts.append("⚠️ Synthesis analysis unavailable (synthesis error)\n\n")
+            response_parts.append("🔮 Guardian Synthesis:\n\n")
+            response_parts.append(
+                "⚠️ Guardian synthesis encountered an error while combining agent insights. "
+                "Individual agent analyses are available above.\n\n"
+            )
+            response_parts.append("---\n\n")
+            logger.error("Guardian synthesis failed - displaying individual agent analyses only")
 
-    # Summary section
+    # Enhanced Summary Section (Story 2.5 - Task 7)
     response_parts.append("⚙️ Agents Consulted:\n")
     if correlation_response:
-        response_parts.append(f"- CorrelationAgent ({correlation_response.agent_address})\n")
+        response_parts.append(
+            f"- CorrelationAgent ({correlation_response.agent_address}) - "
+            f"{correlation_response.processing_time_ms}ms\n"
+        )
     if sector_response:
-        response_parts.append(f"- SectorAgent ({sector_response.agent_address})\n")
+        response_parts.append(
+            f"- SectorAgent ({sector_response.agent_address}) - "
+            f"{sector_response.processing_time_ms}ms\n"
+        )
 
     response_parts.append(f"\n⏱️ Total Analysis Time: {total_time_ms / 1000:.1f} seconds\n")
 
@@ -363,7 +435,7 @@ def generate_synthesis_narrative(
     concentrated_sectors_list = sector_analysis.concentrated_sectors
 
     if compounding_risk_detected:
-        # Compounding risk portfolio narrative
+        # Compounding risk portfolio narrative with explicit agent attribution
         concentrated_sector = concentrated_sectors_list[0] if concentrated_sectors_list else "Unknown"
 
         # Get sector concentration percentage
@@ -375,14 +447,16 @@ def generate_synthesis_narrative(
         # Calculate leverage effect
         leverage = round(correlation_pct / 30.0, 1)
 
-        # Build narrative
+        # Build narrative with explicit agent references (Story 2.5)
         narrative_parts = [
-            f"Your {correlation_pct}% ETH correlation + {concentration_pct:.0f}% {concentrated_sector} concentration creates compounding risk. "
+            f"As CorrelationAgent showed, your {correlation_pct}% ETH correlation creates significant exposure to Ethereum price movements. "
+            f"SectorAgent revealed that your {concentration_pct:.0f}% {concentrated_sector} concentration amplifies this risk through sector-specific vulnerabilities. "
         ]
 
-        # Add multiplier effect
+        # Add Guardian's synthesis insight (combining both agents)
         narrative_parts.append(
-            f"This structure acts like {leverage}x leverage to ETH movements. "
+            f"Combining these insights, Guardian identifies a compounding risk pattern: "
+            f"this structure acts like {leverage}x leverage to ETH movements. "
         )
 
         # Add historical crash example if available
@@ -407,16 +481,20 @@ def generate_synthesis_narrative(
             f"{concentrated_sector} sector amplifies ETH correlation—when both crash together, losses multiply."
         )
 
+        logger.info("Generated synthesis narrative with agent attribution (CorrelationAgent, SectorAgent references)")
+
         return "".join(narrative_parts)
 
     else:
-        # Well-diversified portfolio narrative
+        # Well-diversified portfolio narrative with explicit agent attribution
         narrative_parts = [
-            f"Your {correlation_pct}% ETH correlation is manageable, and no sector exceeds 30% concentration. "
+            f"CorrelationAgent calculated your {correlation_pct}% ETH correlation as manageable. "
+            f"According to SectorAgent's analysis, no sector exceeds 30% concentration. "
         ]
 
+        # Add Guardian's synthesis insight
         narrative_parts.append(
-            "This balanced structure limits compounding risks. "
+            "Combining these findings, Guardian confirms this balanced structure limits compounding risks. "
         )
 
         # Add historical comparison if available
@@ -430,6 +508,8 @@ def generate_synthesis_narrative(
                 f"During {crash_name}, well-diversified portfolios like yours lost around "
                 f"{market_avg_loss:.0f}% versus -75% for concentrated portfolios."
             )
+
+        logger.info("Generated diversified portfolio synthesis narrative with agent attribution")
 
         return "".join(narrative_parts)
 
