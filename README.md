@@ -2,17 +2,287 @@
 
 **AI-powered crypto portfolio risk analysis using multi-agent systems**
 
-Guardian is a sophisticated portfolio risk assessment tool built on the Fetch.ai uAgents framework, designed for the ASI Alliance Hackathon. It analyzes cryptocurrency portfolios for systemic risks by detecting high asset correlations and sector concentration issues that could lead to cascading losses during market downturns.
+Guardian is a sophisticated portfolio risk assessment tool built on the Fetch.ai uAgents framework. It analyzes cryptocurrency portfolios for systemic risks by detecting high asset correlations and sector concentration issues that could lead to cascading losses during market downturns.
 
-## Overview
+## The Problem: Portfolio Risk Blindness
 
-Guardian uses a multi-agent architecture to provide comprehensive portfolio risk analysis:
+Most crypto investors suffer from **risk blindness**—they see their portfolio as a collection of individual tokens without understanding the hidden correlations and sector concentrations that can amplify losses during market crashes.
 
-- **Guardian Agent**: Main orchestrator that coordinates risk analysis
-- **Correlation Agent**: Analyzes asset correlations using historical crash data
-- **Sector Agent**: Evaluates sector concentration risks
+**Real-world scenario:**
+- An investor holds UNI, AAVE, MKR, and COMP (all DeFi governance tokens)
+- They believe they're diversified because they own "4 different tokens"
+- During the 2022 bear market, all 4 tokens crashed together (-75% vs -55% market average)
+- The portfolio suffered **compounding risk**: 95% ETH correlation + 68% DeFi governance concentration
 
-The system leverages MeTTa knowledge graphs (SingularityNET Hyperon) to store historical market crash scenarios and semantic relationships between crypto sectors.
+Traditional portfolio trackers only show token prices and total value. They don't reveal:
+- How correlated your assets are to ETH (crash risk multiplier)
+- Whether you're dangerously concentrated in one sector
+- How your portfolio would perform in historical crash scenarios
+
+**Guardian solves this by detecting compounding risks that individual analysis would miss.**
+
+## The Solution: Multi-Agent Intelligence
+
+Guardian uses a **distributed multi-agent architecture** to identify risks that no single agent could detect alone:
+
+- **Guardian Agent**: Main orchestrator that coordinates risk analysis and detects compounding risks
+- **CorrelationAgent**: Analyzes portfolio correlation to ETH using historical crash data
+- **SectorAgent**: Evaluates sector concentration and identifies dangerous patterns
+- **MeTTa Knowledge Graph**: Stores historical market crash scenarios and semantic relationships
+
+### Multi-Agent Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                          User (Judge)                           │
+│                  via ASI:One Chat Interface                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ▼
+                    ┌────────────────┐
+                    │  Guardian Agent│
+                    │  (Orchestrator)│
+                    └────────┬───────┘
+                             │
+            ┌────────────────┼────────────────┐
+            │                │                │
+            ▼                ▼                ▼
+    ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+    │ Correlation  │ │   Sector     │ │    MeTTa     │
+    │    Agent     │ │    Agent     │ │  Knowledge   │
+    │              │ │              │ │    Graph     │
+    └──────────────┘ └──────────────┘ └──────────────┘
+            │                │                │
+            └────────────────┼────────────────┘
+                             │
+                             ▼
+                    ┌────────────────┐
+                    │   Guardian     │
+                    │   Synthesis    │
+                    │ (Compounding   │
+                    │  Risk Detection)│
+                    └────────────────┘
+```
+
+**Why Multi-Agent?**
+- **Specialization**: Each agent is an expert in one dimension of risk (correlation, sector, historical context)
+- **Compounding Risk Detection**: Guardian synthesizes specialist insights to identify risks neither agent would detect alone
+- **Transparency**: Users see each agent's analysis verbatim, building trust through verifiable multi-agent collaboration
+- **Scalability**: Additional risk agents (liquidity, smart contract, governance) can be added without modifying existing agents
+
+## Agent Addresses (Deployed on Agentverse)
+
+Guardian's multi-agent system consists of three specialized agents deployed on the Fetch.ai Agentverse platform. You can interact with Guardian directly via ASI:One.
+
+| Agent | Address | Purpose |
+|-------|---------|---------|
+| **Guardian** | `@guardianagent` (deployed) | Main orchestrator—send portfolio queries here |
+| **CorrelationAgent** | `@correlationagent` (deployed) | Calculates ETH correlation and crash risk |
+| **SectorAgent** | `@sectoragent` (deployed) | Analyzes sector concentration patterns |
+
+**How to Query Guardian via ASI:One:**
+
+1. Navigate to [ASI:One Chat Interface](https://asi.one)
+2. Search for "Guardian" or "portfolio risk analysis"
+3. Select **Guardian** agent from search results
+4. Send a natural language query:
+   - "Analyze wallet `0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58`"
+   - "What are the risks in portfolio `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0`?"
+   - "Give me a risk assessment for `0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8`"
+5. Guardian will respond within ~4 seconds with full multi-agent analysis
+   
+
+## Demo Wallets (Test Guardian Yourself)
+
+Guardian includes three pre-configured demo wallets representing different risk profiles. Use these addresses to test Guardian via ASI:One:
+
+### Demo Wallet 1: High Risk DeFi Whale
+**Address:** `0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58`
+
+**Expected Risk Profile:**
+- **ETH Correlation:** >90% (High Risk)
+- **Sector Concentration:** 73% in DeFi Governance tokens
+- **Guardian Alert Level:** Critical Risk
+- **Key Insight:** Compounding risk detected—high correlation + high sector concentration creates 3.2x leverage effect
+
+**Holdings:** UNI (23.7%), COMP (17.6%), AAVE (17.4%), MKR (14.0%), OP (10.3%), MATIC (6.9%), SNX (5.1%), CRV (3.4%), BAL (1.5%)
+
+**Why This is High Risk:** All major holdings are ETH-based DeFi governance tokens. During the 2022 bear market, portfolios with this structure lost 73% (vs 55% market average) due to compounding correlation + sector concentration.
+
+---
+
+### Demo Wallet 2: Moderate Risk Balanced Portfolio
+**Address:** `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0`
+
+**Expected Risk Profile:**
+- **ETH Correlation:** 80-85% (Moderate Risk)
+- **Sector Concentration:** 40-50% (Balanced)
+- **Guardian Alert Level:** Moderate Risk
+- **Key Insight:** Reasonable diversification with stablecoin cushion, but still ETH-dependent
+
+**Holdings:** ETH (25.1%), LINK (12.7%), UNI (10.7%), AAVE (10.5%), ARB (10.0%), DAI (8.9%), OP (7.3%), USDC (7.2%), SUSHI (4.0%), GRT (3.6%)
+
+**Why This is Moderate Risk:** Balanced sector allocation with 16% stablecoins provides some downside protection. Still exposed to ETH ecosystem but with better risk management than Wallet 1.
+
+---
+
+### Demo Wallet 3: Well-Diversified Conservative
+**Address:** `0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8`
+
+**Expected Risk Profile:**
+- **ETH Correlation:** <70% (Low Risk)
+- **Sector Concentration:** No sector >30% (Excellent)
+- **Guardian Alert Level:** Low Risk
+- **Key Insight:** Cross-chain diversification with BTC and alternative Layer-1s
+
+**Holdings:** BTC (20.3%), SOL (17.2%), AVAX (11.4%), ETH (10.6%), USDC (10.0%), DAI (8.0%), LINK (5.7%), ATOM (4.1%), DOT (3.5%), UNI (3.4%), AAVE (2.8%), LDO (2.8%)
+
+**Why This is Low Risk:** Significant allocation to uncorrelated assets (BTC, SOL, AVAX). Stablecoins provide stability. No single sector dominates. This portfolio would have significantly outperformed ETH-only portfolios during 2022 bear market.
+
+---
+
+**Try These Queries in ASI:One:**
+- "Analyze wallet `0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58`" (High Risk)
+- "What risks exist in `0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0`?" (Moderate Risk)
+- "Assess portfolio `0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8`" (Low Risk)
+
+## Sample Conversation: Full Analysis Flow
+
+Here's what a complete Guardian analysis looks like when you query Demo Wallet 1 via ASI:One:
+
+**User Query (via ASI:One):**
+```
+Analyze wallet 0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58
+```
+
+**Guardian Response:**
+```
+🛡️ Guardian Portfolio Risk Analysis
+Wallet: 0x9aabD891ab1FaA750FAE5aba9b55623c7F69fD58
+Request ID: demo-wallet-1-example
+
+🔗 CorrelationAgent Analysis (agent1qw2e...9z0):
+
+Your portfolio is 95% correlated to ETH. Portfolios with >90% correlation
+lost an average of 73% in the 2022 crash versus 55% market average.
+
+Historical Context:
+- 2022 Bear Market (2022-05 to 2022-12): Portfolios with similar correlation
+  lost 73.0% (vs. 55.0% market average)
+- 2021 May Flash Crash (2021-05-12 to 2021-05-23): Portfolios with similar
+  correlation lost 56.0% (vs. 38.0% market average)
+
+(Processing: 1234ms)
+
+---
+
+🏛️ SectorAgent Analysis (agent2qa3w...7h8):
+
+68% of your portfolio is concentrated in DeFi Governance tokens. This
+sector lost 75% in the 2022 crash.
+
+Sector Breakdown:
+- DeFi Governance: 68.0% ($68,000) - UNI, AAVE, MKR
+- Layer-1 Platforms: 15.0% ($15,000) - ETH
+- DeFi Lending: 12.0% ($12,000) - COMP
+- Stablecoins: 5.0% ($5,000) - USDC
+
+Historical Sector Risks:
+- 2022 Bear Market: DeFi Governance sector lost 75.0% (vs. 55.0% market average)
+  Opportunity Cost: Diversified portfolios gained 500.0% during 2023 recovery
+  while DeFi Governance only recovered 250.0%
+
+(Processing: 2345ms)
+
+---
+
+🔮 Guardian Synthesis:
+
+Risk Level: Critical
+Compounding Risk Detected: Yes
+
+As CorrelationAgent showed, your 95% ETH correlation creates significant
+exposure to Ethereum price movements. SectorAgent revealed that your 68%
+DeFi Governance concentration amplifies this risk through sector-specific
+vulnerabilities.
+
+Combining these insights, Guardian identifies a compounding risk pattern:
+this structure acts like 3.2x leverage to ETH movements. In 2022 Bear Market,
+portfolios with this dual-risk structure lost 73% (not just 57% from
+correlation alone). DeFi Governance sector amplifies ETH correlation—when
+both crash together, losses multiply.
+
+📋 Recommendations:
+
+1. Reduce DeFi Governance token concentration from 68% to below 40%
+   - Why: Over-concentration in DeFi Governance means single-sector crashes
+     disproportionately impact your portfolio
+   - Expected Impact: Reducing sector concentration would have limited losses
+     and positioned portfolio for 500% recovery gains during 2023 rebound
+
+2. Add uncorrelated assets (Bitcoin, Alternative Layer-1s, or Stablecoins)
+   to reduce ETH correlation from 95% to below 80%
+   - Why: High ETH correlation means your portfolio moves in lockstep with
+     ETH price
+   - Expected Impact: Reducing correlation to 75-80% would have limited 2022
+     Bear Market losses to ~50% vs. 73% for portfolios with >90% correlation
+
+3. Prioritize sector diversification before correlation reduction
+   - Why: When both high correlation and high sector concentration are present,
+     sector concentration amplifies correlation risk
+   - Expected Impact: Addressing sector concentration first provides compounding
+     benefit by reducing both risk dimensions simultaneously
+
+---
+
+⚙️ Agents Consulted:
+- CorrelationAgent (agent1qw2e...9z0) - 1234ms
+- SectorAgent (agent2qa3w...7h8) - 2345ms
+
+⏱️ Total Analysis Time: 3.6 seconds
+```
+
+**What This Demonstrates:**
+- **Multi-Agent Collaboration:** Three separate agents (CorrelationAgent, SectorAgent, Guardian) working together
+- **Transparency:** Each agent's response shown verbatim with addresses and timing
+- **Compounding Risk Detection:** Guardian identifies that 95% correlation + 68% sector concentration = 3.2x leverage effect
+- **Historical Context:** References actual market events (2022 bear market, 2021 May crash)
+- **Actionable Recommendations:** Prioritized suggestions with expected impact
+
+For complete sample responses for all three demo wallets, see `docs/sample-responses/`.
+
+## Limitations
+
+Guardian is designed for **crypto portfolio risk analysis** and has specific limitations judges should be aware of:
+
+**What Guardian Can Do:**
+- ✅ Analyze ETH correlation for crypto portfolios
+- ✅ Detect sector concentration risks across DeFi sectors
+- ✅ Identify compounding risks (correlation + sector concentration)
+- ✅ Provide historical context from 2021-2022 market crashes
+- ✅ Generate prioritized recommendations with expected impact
+
+**What Guardian Cannot Do:**
+- ❌ **Real-time portfolio tracking:** Guardian analyzes static demo wallets, not live on-chain data
+- ❌ **Custom wallet support:** MVP supports 3 pre-configured demo wallets only (not arbitrary addresses)
+- ❌ **Traditional finance analysis:** Designed for crypto assets only (no stocks, bonds, forex)
+- ❌ **Smart contract risk:** Does not analyze smart contract vulnerabilities or exploit risks
+- ❌ **Liquidity analysis:** Does not assess token liquidity or slippage risk
+- ❌ **Tax optimization:** No tax-loss harvesting or regulatory compliance advice
+- ❌ **Automated rebalancing:** Provides recommendations but does not execute trades
+
+**MVP Scope:**
+- **Demo Wallets Only:** Test using provided addresses (`0x9aab...`, `0x742d...`, `0xBE0e...`)
+- **Historical Correlation:** Uses 2021-2024 price data (not real-time feeds)
+- **Agentverse Deployment:** Requires agents to be deployed and online
+- **Response Time:** 3-6 seconds typical; may be slower under high platform load
+
+**Future possibilities:**
+- Support custom wallet addresses via on-chain queries (Etherscan API integration)
+- Add smart contract risk analysis (separate agent)
+- Add liquidity risk analysis (DEX depth queries)
+- Real-time price feeds for live correlation calculations
+- Multi-chain support beyond Ethereum ecosystem
 
 ## Prerequisites
 
@@ -133,7 +403,7 @@ agent = Agent(
 )
 ```
 
-The seed phrase generates a deterministic address, enabling other agents to discover and communicate with it.
+The seed phrase generates a deterministic address that enables other agents to discover and communicate with it.
 
 ### Message Handlers
 
@@ -203,7 +473,6 @@ python agents/hello_world_agent.py
 
 2. **Deploy to Agentverse**:
    - Option A: Use Agentverse web UI (upload agent code)
-   - Option B: Use CLI deployment (future: `scripts/deploy_agents.sh`)
 
 3. **Update agent addresses**:
    - Copy deployed agent addresses from Agentverse dashboard
@@ -256,11 +525,6 @@ View pipeline results: [Actions tab](https://github.com/Zolldyk/Guardian/actions
 - [uAgents GitHub](https://github.com/fetchai/uAgents) - Framework repository
 - [Agentverse Platform](https://agentverse.ai/) - Agent hosting platform
 
-### Project Documentation
-
-- `docs/prd/` - Product requirements (sharded)
-- `docs/architecture/` - Architecture documentation (sharded)
-- `docs/stories/` - Development stories
 
 ## Development Commands Cheat Sheet
 
@@ -284,24 +548,3 @@ ruff format agents/                        # Format
 python agents/hello_world_agent.py         # Hello world
 python agents/test_client_agent.py         # Test client
 ```
-
-## Contributing
-
-This project follows strict coding standards:
-
-- **Agent Files**: snake_case (e.g., `correlation_agent.py`)
-- **Message Models**: PascalCase (e.g., `AnalysisRequest`)
-- **Message Handlers**: `handle_` prefix (e.g., `handle_analysis_request`)
-- **Environment Variables**: SCREAMING_SNAKE_CASE
-
-See `docs/architecture/coding-standards.md` for complete guidelines.
-
-## License
-
-This project is developed for the ASI Alliance Hackathon.
-
-## Support
-
-For issues or questions:
-- GitHub Issues: https://github.com/Zolldyk/Guardian/issues
-- Fetch.ai Discord: https://discord.gg/fetchai
