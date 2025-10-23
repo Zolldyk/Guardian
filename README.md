@@ -2,6 +2,9 @@
 
 **AI-powered crypto portfolio risk analysis using multi-agent systems**
 
+![tag:innovationlab](https://img.shields.io/badge/innovationlab-3D8BD3)
+![tag:hackathon](https://img.shields.io/badge/hackathon-5F43F1)
+
 Guardian is a sophisticated portfolio risk assessment tool built on the Fetch.ai uAgents framework. It analyzes cryptocurrency portfolios for systemic risks by detecting high asset correlations and sector concentration issues that could lead to cascading losses during market downturns.
 
 ## The Problem: Portfolio Risk Blindness
